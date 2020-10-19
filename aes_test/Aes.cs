@@ -51,7 +51,34 @@ namespace aes_test
             }
 
         }
-        public void MixColumns() { }
+        public void MixColumns(byte[] state) {
+            byte[] tmp = new byte[16];
+
+            tmp[0] = (byte)(Const.gMulBy2[state[0]] ^ Const.gMulBy3[state[1]] ^ state[2] ^ state[3]);
+            tmp[1] = (byte)(state[0] ^ Const.gMulBy2[state[1]] ^ Const.gMulBy3[state[2]] ^ state[3]);
+            tmp[2] = (byte)(state[0] ^ state[1] ^ Const.gMulBy2[state[2]] ^ Const.gMulBy3[state[3]]);
+            tmp[3] = (byte)(Const.gMulBy3[state[0]] ^ state[1] ^ state[2] ^ Const.gMulBy2[state[3]]);
+
+            tmp[4] = (byte)(Const.gMulBy2[state[4]] ^ Const.gMulBy3[state[5]] ^ state[6] ^ state[7]);
+            tmp[5] = (byte)(state[4] ^ Const.gMulBy2[state[5]] ^ Const.gMulBy3[state[6]] ^ state[7]);
+            tmp[6] = (byte)(state[4] ^ state[5] ^ Const.gMulBy2[state[6]] ^ Const.gMulBy3[state[7]]);
+            tmp[7] = (byte)(Const.gMulBy3[state[4]] ^ state[5] ^ state[6] ^ Const.gMulBy2[state[7]]);
+
+            tmp[8] = (byte)(Const.gMulBy2[state[8]] ^ Const.gMulBy3[state[9]] ^ state[10] ^ state[11]);
+            tmp[9] = (byte)(state[8] ^ Const.gMulBy2[state[9]] ^ Const.gMulBy3[state[10]] ^ state[11]);
+            tmp[10] = (byte)(state[8] ^ state[9] ^ Const.gMulBy2[state[10]] ^ Const.gMulBy3[state[11]]);
+            tmp[11] = (byte)(Const.gMulBy3[state[8]] ^ state[9] ^ state[10] ^ Const.gMulBy2[state[11]]);
+
+            tmp[12] = (byte)(Const.gMulBy2[state[12]] ^ Const.gMulBy3[state[13]] ^ state[14] ^ state[15]);
+            tmp[13] = (byte)(state[12] ^ Const.gMulBy2[state[13]] ^ Const.gMulBy3[state[14]] ^ state[15]);
+            tmp[14] = (byte)(state[12] ^ state[13] ^ Const.gMulBy2[state[14]] ^ Const.gMulBy3[state[15]]);
+            tmp[15] = (byte)(Const.gMulBy3[state[12]] ^ state[13] ^ state[14] ^ Const.gMulBy2[state[15]]);
+
+            for(int i = 0; i < 16; i++)
+            {
+                state[i] = tmp[i];
+            }
+        }
         public void AddRoundKey(byte[] state, byte[] roundKey) {
             for(int i = 0; i < 16; i++)
             {
