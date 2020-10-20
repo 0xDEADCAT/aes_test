@@ -51,6 +51,7 @@ namespace aes_test
             if(!decrypt)
             {
                 using (FileStream fs = input.OpenRead())
+                using (FileStream fsOut = output.OpenWrite())
                 {
                     byte[] message = new byte[16];
                     byte[] key = new byte[16] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
@@ -79,6 +80,16 @@ namespace aes_test
                             }
                         }
                         aes.Encrypt(message, expandedKey);
+
+                        for (int i = 0; i < 16; i++)
+                        {
+                            Console.Write($"{message[i]:X2}");
+                            Console.Write(' ');
+                        }
+
+                        Console.WriteLine();
+
+                        fsOut.Write(message, 0, 16);
                     }
                 }
                 

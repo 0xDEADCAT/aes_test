@@ -161,7 +161,10 @@ namespace aes_test
             {
                 Console.Write($"{state[i]:X2}");
                 Console.Write(' ');
+                message[i] = state[i];
             }
+
+            Console.WriteLine();
             
         }
         public void Decrypt()
