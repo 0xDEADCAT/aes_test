@@ -2,6 +2,8 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace aes_test
@@ -24,17 +26,23 @@ namespace aes_test
             outputOption.Argument = new Argument<FileInfo>();
             outputOption.IsRequired = true;
             rootCommand.AddOption(outputOption);
+            Option passOption = new Option(
+                aliases: new string[] { "--passphrase", "-p" },
+                description: "The passphrase to derive the key from.");
+            passOption.Argument = new Argument<String>();
+            passOption.IsRequired = true;
+            rootCommand.AddOption(passOption);
             Option decryptOption = new Option(
                 aliases: new string[] { "--decrypt", "-d" },
                 description: "Decrypt the input data.");
             decryptOption.Argument = new Argument<bool>();
             rootCommand.AddOption(decryptOption);
             rootCommand.Handler =
-              CommandHandler.Create<FileInfo, FileInfo, bool>(RunAES);
+              CommandHandler.Create<FileInfo, FileInfo, String, bool>(RunAES);
             return await rootCommand.InvokeAsync(args);
         }
 
-        public static void RunAES(FileInfo input, FileInfo output, bool decrypt)
+        public static void RunAES(FileInfo input, FileInfo output, String passphrase, bool decrypt)
         {
             if(!input.Exists)
             {
@@ -44,6 +52,18 @@ namespace aes_test
                 return;
             }
 
+            // Create key using PBKDF2
+            byte[] salt = new byte[8];
+            int iterations = 10000;
+            using (RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider())
+            {
+                // Fill the array with a random value.
+                rngCsp.GetBytes(salt);
+            }
+
+            Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(passphrase, salt, iterations, HashAlgorithmName.SHA256);
+
+
             AES aes = new AES();
 
             if(!decrypt)
@@ -51,12 +71,19 @@ namespace aes_test
                 using (FileStream fs = input.OpenRead())
                 using (FileStream fsOut = output.OpenWrite())
                 {
+                    // Mark encrypted file as salted at beginning
+                    string saltedMsg = "Salted__";
+                    byte[] saltedMsgBytes = Encoding.ASCII.GetBytes(saltedMsg);
+                    fsOut.Write(saltedMsgBytes);
+
+                    // Insert salt into file
+                    fsOut.Write(salt);
+
                     byte[] message = new byte[16];
-                    byte[] key = new byte[16] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 
                     byte[] expandedKey = new byte[176];
 
-                    aes.KeyExpansion(key, expandedKey);
+                    aes.KeyExpansion(key.GetBytes(16), expandedKey);
 
                     bool ended = false;
 
