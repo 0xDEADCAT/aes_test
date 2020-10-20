@@ -2,8 +2,6 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
-using System.Net.Security;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace aes_test
