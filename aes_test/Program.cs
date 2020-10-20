@@ -63,7 +63,6 @@ namespace aes_test
 
             Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(passphrase, salt, iterations, HashAlgorithmName.SHA256);
 
-
             AES aes = new AES();
 
             if(!decrypt)
@@ -105,14 +104,6 @@ namespace aes_test
                             }
                         }
                         aes.Encrypt(message, expandedKey);
-
-                        for (int i = 0; i < 16; i++)
-                        {
-                            Console.Write($"{message[i]:X2}");
-                            Console.Write(' ');
-                        }
-
-                        Console.WriteLine();
 
                         fsOut.Write(message, 0, 16);
                     }
