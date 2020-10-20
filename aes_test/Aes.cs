@@ -142,9 +142,6 @@ namespace aes_test
             }
             int numberOfRounds = 9;
 
-            byte[] expandedKey = new byte[176];
-
-            KeyExpansion(key, expandedKey);
             AddRoundKey(state, key); // Initial round
 
             for(int i = 0; i < numberOfRounds; i++)
@@ -152,13 +149,13 @@ namespace aes_test
                 SubBytes(state);
                 ShiftRows(state);
                 MixColumns(state);
-                AddRoundKey(state, new ArraySegment<byte>(expandedKey, 16 * (i + 1), 16).ToArray());
+                AddRoundKey(state, new ArraySegment<byte>(key, 16 * (i + 1), 16).ToArray());
             }
 
             // Final round
             SubBytes(state);
             ShiftRows(state);
-            AddRoundKey(state, new ArraySegment<byte>(expandedKey, 160, 16).ToArray());
+            AddRoundKey(state, new ArraySegment<byte>(key, 160, 16).ToArray());
 
             for(int i = 0; i < 16; i++)
             {
