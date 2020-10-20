@@ -13,7 +13,55 @@ namespace aes_test
             state = new byte[16];
         }
 
-        public void KeyExpansion() { }
+        public void KeyExpansionCore(byte[] input, int i)
+        {
+            // Rotate left
+            byte t = input[0];
+            input[0] = input[1];
+            input[1] = input[2];
+            input[2] = input[3];
+            input[3] = t;
+
+            // S-Box four bytes
+            input[0] = Const.sbox[input[0]];
+            input[1] = Const.sbox[input[1]];
+            input[2] = Const.sbox[input[2]];
+            input[3] = Const.sbox[input[3]];
+
+            // RCon
+            input[0] ^= Const.rcon[i];
+        }
+
+        public void KeyExpansion(byte[] inputKey, byte[] expandedKeys) {
+            // The first 16 bytes are the original key
+            for(int i = 0; i < 16; i++)
+            {
+                expandedKeys[i] = inputKey[i];
+            }
+
+            int bytesGenerated = 16;
+            int rconIteration = 1;
+            byte[] temp = new byte[4];
+
+            while(bytesGenerated < 176)
+            {
+                // Read 4 bytes for the core
+                for(int i = 0; i < 4; i++)
+                {
+                    temp[i] = expandedKeys[i + bytesGenerated - 4];
+                }
+
+                // Perform core once for each 16 byte key
+                if (bytesGenerated % 16 == 0)
+                    KeyExpansionCore(temp, rconIteration++);
+
+                for(int i = 0; i < 4; i++)
+                {
+                    expandedKeys[bytesGenerated] = (byte)(expandedKeys[bytesGenerated - 16] ^ temp[i]);
+                    bytesGenerated++;
+                }
+            }
+        }
 
         public void SubBytes(byte[] state) {
             for(int i = 0; i < 16; i++)
@@ -92,23 +140,31 @@ namespace aes_test
             {
                 state[i] = message[i];
             }
-            int numberOfRounds = 1;
+            int numberOfRounds = 9;
 
-            KeyExpansion();
+            byte[] expandedKey = new byte[176];
+
+            KeyExpansion(key, expandedKey);
             AddRoundKey(state, key); // Initial round
 
-            for(int i = 0; i< numberOfRounds; i++)
+            for(int i = 0; i < numberOfRounds; i++)
             {
                 SubBytes(state);
                 ShiftRows(state);
-                MixColumns();
-                AddRoundKey(state, key);
+                MixColumns(state);
+                AddRoundKey(state, new ArraySegment<byte>(expandedKey, 16 * (i + 1), 16).ToArray());
             }
 
             // Final round
             SubBytes(state);
             ShiftRows(state);
-            AddRoundKey(state, key);
+            AddRoundKey(state, new ArraySegment<byte>(expandedKey, 160, 16).ToArray());
+
+            for(int i = 0; i < 16; i++)
+            {
+                Console.Write($"{state[i]:X2}");
+                Console.Write(' ');
+            }
             
         }
         public void Decrypt()

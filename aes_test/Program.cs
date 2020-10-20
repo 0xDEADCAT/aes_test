@@ -55,8 +55,25 @@ namespace aes_test
                     byte[] message = new byte[16];
                     byte[] key = new byte[16] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 
-                    while(fs.Read(message, 0, 16) > 0)
+                    bool ended = false;
+
+                    while(!ended)
                     {
+                        int readBytes = fs.Read(message, 0, 16);
+                        if(readBytes == 0) // pad 16 byte block
+                        {
+                            ended = true;
+                            for (int i = 0; i < 16; i++)
+                                message[i] = 16;
+                        }
+                        else if (readBytes % 16 != 0) // pad missing bytes according to PKCS#7
+                        {
+                            ended = true;
+                            for(int i = 0; i < 16 - readBytes; i++)
+                            {
+                                message[readBytes + i] = (byte)(16 - readBytes);
+                            }
+                        }
                         aes.Encrypt(message, key);
                     }
                 }
