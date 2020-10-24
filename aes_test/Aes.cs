@@ -163,12 +163,104 @@ namespace aes_test
             }
             
         }
-        public void Decrypt()
+        public void Decrypt(byte[] message, byte[] key)
         {
+            for(int i = 0; i < 16; i++)
+            {
+                state[i] = message[i];
+            }
+            int numberOfRounds = 9;
 
+            // Initial round
+            AddRoundKey(state, new ArraySegment<byte>(key, 160, 16).ToArray());
+
+            for(int i = 0; i < numberOfRounds; i++)
+            {
+                InvShiftRows(state);
+                InvSubBytes(state);
+                AddRoundKey(state, new ArraySegment<byte>(key, 16 * (numberOfRounds - i), 16).ToArray());
+                InvMixColumns(state);
+            }
+
+            // Final round
+            InvShiftRows(state);
+            InvSubBytes(state);
+            AddRoundKey(state, key);
+
+            for(int i = 0; i < 16; i++)
+            {
+                message[i] = state[i];
+            }
         }
 
-        
+        public void InvShiftRows(byte[] state)
+        {
+            byte[] tmp = new byte[16];
+
+            tmp[0] = state[0];
+            tmp[1] = state[13];
+            tmp[2] = state[10];
+            tmp[3] = state[7];
+
+            tmp[4] = state[4];
+            tmp[5] = state[1];
+            tmp[6] = state[14];
+            tmp[7] = state[11];
+
+            tmp[8] = state[8];
+            tmp[9] = state[5];
+            tmp[10] = state[2];
+            tmp[11] = state[15];
+
+            tmp[12] = state[12];
+            tmp[13] = state[9];
+            tmp[14] = state[6];
+            tmp[15] = state[3];
+
+            for (int i = 0; i < 16; i++)
+            {
+                state[i] = tmp[i];
+            }
+        }
+
+        public void InvSubBytes(byte[] state)
+        {
+            for (int i = 0; i < 16; i++)
+            {
+                // Substitute each byte in state for 
+                state[i] = Const.invSbox[state[i]];
+            }
+        }
+
+        public void InvMixColumns(byte[] state)
+        {
+            byte[] tmp = new byte[16];
+
+            tmp[0] = (byte)(Const.gMulBy14[state[0]] ^ Const.gMulBy11[state[1]] ^ Const.gMulBy13[state[2]] ^ Const.gMulBy9[state[3]]);
+            tmp[1] = (byte)(Const.gMulBy9[state[0]] ^ Const.gMulBy14[state[1]] ^ Const.gMulBy11[state[2]] ^ Const.gMulBy13[state[3]]);
+            tmp[2] = (byte)(Const.gMulBy13[state[0]] ^ Const.gMulBy9[state[1]] ^ Const.gMulBy14[state[2]] ^ Const.gMulBy11[state[3]]);
+            tmp[3] = (byte)(Const.gMulBy11[state[0]] ^ Const.gMulBy13[state[1]] ^ Const.gMulBy9[state[2]] ^ Const.gMulBy14[state[3]]);
+
+            tmp[4] = (byte)(Const.gMulBy14[state[4]] ^ Const.gMulBy11[state[5]] ^ Const.gMulBy13[state[6]] ^ Const.gMulBy9[state[7]]);
+            tmp[5] = (byte)(Const.gMulBy9[state[4]] ^ Const.gMulBy14[state[5]] ^ Const.gMulBy11[state[6]] ^ Const.gMulBy13[state[7]]);
+            tmp[6] = (byte)(Const.gMulBy13[state[4]] ^ Const.gMulBy9[state[5]] ^ Const.gMulBy14[state[6]] ^ Const.gMulBy11[state[7]]);
+            tmp[7] = (byte)(Const.gMulBy11[state[4]] ^ Const.gMulBy13[state[5]] ^ Const.gMulBy9[state[6]] ^ Const.gMulBy14[state[7]]);
+
+            tmp[8] = (byte)(Const.gMulBy14[state[8]] ^ Const.gMulBy11[state[9]] ^ Const.gMulBy13[state[10]] ^ Const.gMulBy9[state[11]]);
+            tmp[9] = (byte)(Const.gMulBy9[state[8]] ^ Const.gMulBy14[state[9]] ^ Const.gMulBy11[state[10]] ^ Const.gMulBy13[state[11]]);
+            tmp[10] = (byte)(Const.gMulBy13[state[8]] ^ Const.gMulBy9[state[9]] ^ Const.gMulBy14[state[10]] ^ Const.gMulBy11[state[11]]);
+            tmp[11] = (byte)(Const.gMulBy11[state[8]] ^ Const.gMulBy13[state[9]] ^ Const.gMulBy9[state[10]] ^ Const.gMulBy14[state[11]]);
+
+            tmp[12] = (byte)(Const.gMulBy14[state[12]] ^ Const.gMulBy11[state[13]] ^ Const.gMulBy13[state[14]] ^ Const.gMulBy9[state[15]]);
+            tmp[13] = (byte)(Const.gMulBy9[state[12]] ^ Const.gMulBy14[state[13]] ^ Const.gMulBy11[state[14]] ^ Const.gMulBy13[state[15]]);
+            tmp[14] = (byte)(Const.gMulBy13[state[12]] ^ Const.gMulBy9[state[13]] ^ Const.gMulBy14[state[14]] ^ Const.gMulBy11[state[15]]);
+            tmp[15] = (byte)(Const.gMulBy11[state[12]] ^ Const.gMulBy13[state[13]] ^ Const.gMulBy9[state[14]] ^ Const.gMulBy14[state[15]]);
+
+            for (int i = 0; i < 16; i++)
+            {
+                state[i] = tmp[i];
+            }
+        }
 
     }
 }
