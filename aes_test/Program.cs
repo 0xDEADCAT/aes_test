@@ -111,7 +111,7 @@ namespace aes_test
 
             } else {
                 using (FileStream fs = input.OpenRead())
-                using (FileStream fsOut = output.Open(FileMode.Create, FileAccess.Write))
+                using (FileStream fsOut = output.Open(FileMode.Create, FileAccess.ReadWrite))
                 {
                     byte[] salt = new byte[8];
 
@@ -132,7 +132,9 @@ namespace aes_test
                     aes.KeyExpansion(key.GetBytes(16), expandedKey);
 
                     bool ended = false;
-                    byte lastByte = new byte();
+
+                    // Store previous decrypted block
+                    byte[] final = new byte[16];
 
                     while(!ended)
                     {
@@ -140,15 +142,39 @@ namespace aes_test
                         if(readBytes == 0)
                         {
                             ended = true;
+                            // Check padding correctness
+                            int n = final[15];
+                            int b = 16;
+                            if(n == 0 || n > 16)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.Error.WriteLine("Bad decrypt");
+                                Console.ResetColor();
+                                return;
+                            }
+                            for(int i = 0; i<n; i++)
+                            {
+                                if(final[--b] != n)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.Error.WriteLine("Bad decrypt");
+                                    Console.ResetColor();
+                                    return;
+                                }
+                            }
+
                             // Strip padding
-                            fsOut.SetLength(fsOut.Length - lastByte);
+                            fsOut.SetLength(fsOut.Length - n);
                             fsOut.Close();
                         }
                         else
                         {
                             aes.Decrypt(message, expandedKey);
 
-                            lastByte = message[15];
+                            for(int i = 0; i < 16; i++)
+                            {
+                                final[i] = message[i];
+                            }
                             fsOut.Write(message, 0, 16);
                         }
                     }
