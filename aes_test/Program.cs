@@ -52,21 +52,21 @@ namespace aes_test
                 return;
             }
 
-            // Create key using PBKDF2
-            byte[] salt = new byte[8];
-            int iterations = 10000;
-            using (RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider())
-            {
-                // Fill the array with a random value.
-                rngCsp.GetBytes(salt);
-            }
-
-            Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(passphrase, salt, iterations, HashAlgorithmName.SHA256);
-
             AES aes = new AES();
 
             if(!decrypt)
             {
+                // Create key using PBKDF2
+                byte[] salt = new byte[8];
+                int iterations = 10000;
+                using (RNGCryptoServiceProvider rngCsp = new RNGCryptoServiceProvider())
+                {
+                    // Fill the array with a random value.
+                    rngCsp.GetBytes(salt);
+                }
+
+                Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(passphrase, salt, iterations, HashAlgorithmName.SHA256);
+
                 using (FileStream fs = input.OpenRead())
                 using (FileStream fsOut = output.OpenWrite())
                 {
