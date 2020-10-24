@@ -111,7 +111,7 @@ namespace aes_test
 
             } else {
                 using (FileStream fs = input.OpenRead())
-                using (FileStream fsOut = output.OpenWrite())
+                using (FileStream fsOut = output.Open(FileMode.Create, FileAccess.Write))
                 {
                     byte[] salt = new byte[8];
 
