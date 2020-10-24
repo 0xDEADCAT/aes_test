@@ -2,7 +2,7 @@
   "profiles": {
     "aes_test": {
       "commandName": "Project",
-      "commandLineArgs": "-i super_secret.txt -o xd.txt -p xd"
+      "commandLineArgs": "-i xd.txt -o xd2.txt -p xd -d"
     }
   }
 }

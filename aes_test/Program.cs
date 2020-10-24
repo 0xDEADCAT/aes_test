@@ -54,7 +54,7 @@ namespace aes_test
 
             AES aes = new AES();
 
-            if(!decrypt)
+            if (!decrypt)
             {
                 // Create key using PBKDF2
                 byte[] salt = new byte[8];
@@ -86,10 +86,10 @@ namespace aes_test
 
                     bool ended = false;
 
-                    while(!ended)
+                    while (!ended)
                     {
                         int readBytes = fs.Read(message, 0, 16);
-                        if(readBytes == 0) // pad 16 byte block
+                        if (readBytes == 0) // pad 16 byte block
                         {
                             ended = true;
                             for (int i = 0; i < 16; i++)
@@ -98,7 +98,7 @@ namespace aes_test
                         else if (readBytes % 16 != 0) // pad missing bytes according to PKCS#7
                         {
                             ended = true;
-                            for(int i = 0; i < 16 - readBytes; i++)
+                            for (int i = 0; i < 16 - readBytes; i++)
                             {
                                 message[readBytes + i] = (byte)(16 - readBytes);
                             }
@@ -108,9 +108,51 @@ namespace aes_test
                         fsOut.Write(message, 0, 16);
                     }
                 }
-                
+
             } else {
-                aes.Decrypt(); 
+                using (FileStream fs = input.OpenRead())
+                using (FileStream fsOut = output.OpenWrite())
+                {
+                    byte[] salt = new byte[8];
+
+                    fs.Read(salt, 0, 8); // Read first 8 bytes from input file
+                    if (Encoding.ASCII.GetString(salt) == "Salted__") // Check if file is Salted
+                    {
+                        fs.Read(salt, 0, 8); // Read next 8 bytes into salt array
+                    }
+
+                    int iterations = 10000;
+
+                    Rfc2898DeriveBytes key = new Rfc2898DeriveBytes(passphrase, salt, iterations, HashAlgorithmName.SHA256);
+
+                    byte[] message = new byte[16];
+
+                    byte[] expandedKey = new byte[176];
+
+                    aes.KeyExpansion(key.GetBytes(16), expandedKey);
+
+                    bool ended = false;
+                    byte lastByte = new byte();
+
+                    while(!ended)
+                    {
+                        int readBytes = fs.Read(message, 0, 16);
+                        if(readBytes == 0)
+                        {
+                            ended = true;
+                            // Strip padding
+                            fsOut.SetLength(fsOut.Length - lastByte);
+                            fsOut.Close();
+                        }
+                        else
+                        {
+                            aes.Decrypt(message, expandedKey);
+
+                            lastByte = message[15];
+                            fsOut.Write(message, 0, 16);
+                        }
+                    }
+                } 
             }
         }
     }
