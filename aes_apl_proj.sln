@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "aes_test", "aes_test\aes_test.csproj", "{8E2539BF-612D-4F82-B522-584A7A2FB4EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "openaes", "aes_test\openaes.csproj", "{8E2539BF-612D-4F82-B522-584A7A2FB4EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

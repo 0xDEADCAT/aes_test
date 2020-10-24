@@ -5,8 +5,9 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using aes_test;
 
-namespace aes_test
+namespace openaes
 {
     class Program
     {
