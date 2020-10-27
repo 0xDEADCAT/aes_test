@@ -45,6 +45,17 @@ namespace openaes
 
         public static void RunAES(FileInfo input, FileInfo output, String passphrase, bool decrypt)
         {
+            AesAsm asmP = new AesAsm();
+
+            int first = 2;
+            int second = 5;
+
+            int r;
+
+            r = asmP.executeAsmAddTwoInts(first, second);
+            Console.WriteLine($"ASM RESULT: {r}");
+            
+
             if(!input.Exists)
             {
                 Console.ForegroundColor = ConsoleColor.Red;

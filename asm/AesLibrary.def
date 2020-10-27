@@ -1,1 +1,4 @@
 LIBRARY "asm"
+EXPORTS
+
+asmAddTwoInts
