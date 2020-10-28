@@ -32,15 +32,17 @@ asmEncrypt proc
 
 	push rbx
 	
-	pextrw eax, xmm0, 0		; extract word from XMM0 into eax
+	pextrw eax, xmm0, 0		; extract word from XMM0 (state) into eax
 	xor ebx, ebx
-	mov bl, al				; move first byte of state into bl
+	mov bl, al				; move first byte of word into bl
 	lea rsi, [sbox]			; get address of the sbox array
-	mov al, [ rsi + rbx ]	; substitute first byte of state
+	mov al, [ rsi + rbx ]	; substitute first byte of word
 	xor ebx, ebx
-	mov bl, ah				; move second byte of state into bl
-	mov ah, [ rsi + rbx ]	; substitute second byte of state
-	pinsrw xmm2, eax, 0		; put first two substituted bytes into XMM2
+	mov bl, ah				; move second byte of word into bl
+	mov ah, [ rsi + rbx ]	; substitute second byte of word
+	psrldq xmm0, 2			; shift state to the right by two bytes
+
+	pinsrw xmm0, eax, 7		; insert substituted bytes into two most significant bytes
 
 	pop rbx
 
