@@ -31,7 +31,12 @@ asmEncrypt proc
 	pxor	xmm0, xmm1		; Perform XOR on state with the key (AddRoundKey)
 
 	push rbx
-	
+
+	push rcx				; Push address of the state array on the stack
+
+	mov rcx, 8				; Initialize SubBytes counter
+
+SubBytes:
 	pextrw eax, xmm0, 0		; extract word from XMM0 (state) into eax
 	xor ebx, ebx
 	mov bl, al				; move first byte of word into bl
@@ -41,8 +46,12 @@ asmEncrypt proc
 	mov bl, ah				; move second byte of word into bl
 	mov ah, [ rsi + rbx ]	; substitute second byte of word
 	psrldq xmm0, 2			; shift state to the right by two bytes
-
 	pinsrw xmm0, eax, 7		; insert substituted bytes into two most significant bytes
+
+	dec rcx
+	jnz	SubBytes
+
+	pop rcx					; Retrieve address of the state array from the stack
 
 	pop rbx
 
