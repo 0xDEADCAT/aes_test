@@ -1,15 +1,26 @@
-﻿using System.Runtime.InteropServices;
+﻿using cs_implementation;
+using System.Runtime.InteropServices;
 
 namespace openaes
 {
     public unsafe class AesAsm
     {
         [DllImport("asm.dll")]
-        private static extern int asmAddTwoInts(int a, int b);
+        private static extern void asmEncrypt(byte[] message, byte[] key);
 
-        public int executeAsmAddTwoInts(int a, int b)
+        public void Encrypt(byte[] message, byte[] key)
         {
-            return asmAddTwoInts(a, b);
+            asmEncrypt(message, key);
+        }
+
+        public void Decrypt(byte[] message, byte[] key)
+        {
+        }
+
+        public void KeyExpansion(byte[] inputKey, byte[] expandedKey)
+        {
+            AES aes = new AES();
+            aes.KeyExpansion(inputKey, expandedKey);
         }
     }
 }
