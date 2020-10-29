@@ -19,6 +19,10 @@ LoopHead:
 	pop rbx
 endm
 
+ShiftRows macro reg
+	pshufb	xmm0, [srMask]		; Shuffle bytes according to srMask
+endm
+
 .data
 
 ; ------------------------------------------
@@ -43,6 +47,11 @@ db 8cH, 0a1H, 89H, 0dH, 0bfH, 0e6H, 42H, 68H, 41H, 99H, 2dH, 0fH, 0b0H, 54H, 0bb
 
 ;-------------------------------------------
 
+;-------------------------------------------
+; mask for ShiftRows
+srMask db 00H, 5H, 0aH, 0fH, 04H, 09H, 0eH, 03H, 08H, 0dH, 02H, 07H, 0cH, 01H, 06H, 0bH
+;-------------------------------------------
+
 
 .code
 asmEncrypt proc
@@ -50,7 +59,8 @@ asmEncrypt proc
 	movdqu	xmm1, [rdx]		; Move first key to xmm1
 	pxor	xmm0, xmm1		; Perform XOR on state with the key (AddRoundKey)
 
-	SubBytes xmm0			; call the SubBytes macro
+	SubBytes xmm0
+	ShiftRows xmm0
 
 	ret
 asmEncrypt endp
