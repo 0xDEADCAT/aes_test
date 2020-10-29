@@ -1,3 +1,24 @@
+SubBytes macro reg
+	push rbx
+	push rcx				; Push address of the state array on the stack
+	mov rcx, 8				; Initialize SubBytes counter
+LoopHead:
+	pextrw eax, reg, 0		; extract word from reg (state) into eax
+	xor ebx, ebx
+	mov bl, al				; move first byte of word into bl
+	lea rsi, [sbox]			; get address of the sbox array
+	mov al, [ rsi + rbx ]	; substitute first byte of word
+	xor ebx, ebx
+	mov bl, ah				; move second byte of word into bl
+	mov ah, [ rsi + rbx ]	; substitute second byte of word
+	psrldq reg, 2			; shift state to the right by two bytes
+	pinsrw reg, eax, 7		; insert substituted bytes into two most significant bytes of state
+	dec rcx
+	jnz	LoopHead
+	pop rcx					; Retrieve address of the state array from the stack
+	pop rbx
+endm
+
 .data
 
 ; ------------------------------------------
@@ -23,37 +44,13 @@ db 8cH, 0a1H, 89H, 0dH, 0bfH, 0e6H, 42H, 68H, 41H, 99H, 2dH, 0fH, 0b0H, 54H, 0bb
 ;-------------------------------------------
 
 
-
 .code
 asmEncrypt proc
 	movdqu	xmm0, [rcx]		; Move state to xmm0
 	movdqu	xmm1, [rdx]		; Move first key to xmm1
 	pxor	xmm0, xmm1		; Perform XOR on state with the key (AddRoundKey)
 
-	push rbx
-
-	push rcx				; Push address of the state array on the stack
-
-	mov rcx, 8				; Initialize SubBytes counter
-
-SubBytes:
-	pextrw eax, xmm0, 0		; extract word from XMM0 (state) into eax
-	xor ebx, ebx
-	mov bl, al				; move first byte of word into bl
-	lea rsi, [sbox]			; get address of the sbox array
-	mov al, [ rsi + rbx ]	; substitute first byte of word
-	xor ebx, ebx
-	mov bl, ah				; move second byte of word into bl
-	mov ah, [ rsi + rbx ]	; substitute second byte of word
-	psrldq xmm0, 2			; shift state to the right by two bytes
-	pinsrw xmm0, eax, 7		; insert substituted bytes into two most significant bytes
-
-	dec rcx
-	jnz	SubBytes
-
-	pop rcx					; Retrieve address of the state array from the stack
-
-	pop rbx
+	SubBytes xmm0			; call the SubBytes macro
 
 	ret
 asmEncrypt endp

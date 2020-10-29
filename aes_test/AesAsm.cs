@@ -6,11 +6,14 @@ namespace openaes
     public unsafe class AesAsm
     {
         [DllImport("asm.dll")]
-        private static extern void asmEncrypt(byte[] message, byte[] key);
+        private static extern void asmEncrypt(byte* message, byte* key);
 
         public void Encrypt(byte[] message, byte[] key)
         {
-            asmEncrypt(message, key);
+            fixed (byte* msg = message, k = key)
+            {
+                asmEncrypt(msg, k);
+            }
         }
 
         public void Decrypt(byte[] message, byte[] key)
