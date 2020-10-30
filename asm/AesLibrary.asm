@@ -1,8 +1,9 @@
 SubBytes macro reg
+	LOCAL SubBytesLoop
 	push rbx
 	push rcx				; Push address of the state array on the stack
 	mov rcx, 8				; Initialize SubBytes counter
-LoopHead:
+SubBytesLoop:
 	pextrw eax, reg, 0		; extract word from reg (state) into eax
 	xor ebx, ebx
 	mov bl, al				; move first byte of word into bl
@@ -14,13 +15,13 @@ LoopHead:
 	psrldq reg, 2			; shift state to the right by two bytes
 	pinsrw reg, eax, 7		; insert substituted bytes into two most significant bytes of state
 	dec rcx
-	jnz	LoopHead
+	jnz	SubBytesLoop
 	pop rcx					; Retrieve address of the state array from the stack
 	pop rbx
 endm
 
 ShiftRows macro reg
-	pshufb	xmm0, [srMask]		; Shuffle bytes according to srMask
+	pshufb reg, [srMask]		; Shuffle bytes according to srMask
 endm
 
 MixColumns macro reg
@@ -170,13 +171,35 @@ db 0bH, 08H, 0dH, 0eH, 07H, 04H, 01H, 02H, 13H, 10H, 15H, 16H, 1fH, 1cH, 19H, 1a
 asmEncrypt proc
 	movdqu	xmm0, [rcx]		; Move state to xmm0
 	movdqu	xmm1, [rdx]		; Move first key to xmm1
-	pxor	xmm0, xmm1		; Perform XOR on state with the key (AddRoundKey)
+	pxor	xmm0, xmm1		; Perform XOR on state with the round key (AddRoundKey)
 
+	push rcx				; Push address of the state array on the stack
+
+	xor rcx, rcx
+	inc rcx 
+	inc rcx
+
+LoopHead:
 	SubBytes xmm0
 	ShiftRows xmm0
 	MixColumns xmm0
+	movdqu xmm1, [rdx + rcx * 8]
+	pxor   xmm0, xmm1		; Perform XOR on state with the round key (AddRoundKey)
 
-	
+	inc rcx
+	inc rcx
+	cmp rcx, 18
+	jle	LoopHead
+
+	pop rcx ; Retrieve address of the state array from the stack
+
+	; Final Round
+	SubBytes xmm0
+	ShiftRows xmm0
+	movdqu xmm1, [rdx + 160] ; Move last expanded key to xmm1
+	pxor xmm0, xmm1			 ; Perform XOR on state with the round key (AddRoundKey)
+
+	movdqu	[rcx], xmm0		; Move cipherkey to memory
 
 	ret
 asmEncrypt endp
