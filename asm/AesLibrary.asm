@@ -457,12 +457,12 @@ asmDecrypt endp
 asmKeyExpansion proc
 	movdqu xmm0, [rcx]		; Move original key to xmm0
 	movdqu [rdx], xmm0		; Copy original key to beginning of expandedKeys array
-	add rdx, 16				; Move to next key in expandedKeys
+	add rdx, 16				; Move address to beginning of next key in expandedKeys
 	
 	push rbx
-	push rcx
+	push rcx				; Push address of the original key array on the stack
 	mov rcx, 10				; Initialize KeyExpLoop counter for number of generated round keys
-	mov r8, 1				; rcon Iteration
+	mov r8, 1				; rcon Iteration (used in rcon substitution)
 	
 KeyExpLoop:
 	pextrd eax, xmm0, 3		; Extract last column from previous key
@@ -470,6 +470,7 @@ KeyExpLoop:
 
 	push rcx				; Preserve KeyExpLoop counter
 	mov rcx, 2				; Initialize SubBytesLoop counter
+
 SubBytesLoop:
 	xor ebx, ebx
 	mov bl, al				; move first byte of word into bl
@@ -478,15 +479,15 @@ SubBytesLoop:
 	xor ebx, ebx
 	mov bl, ah				; move second byte of word into bl
 	mov ah, [ rsi + rbx ]	; substitute second byte of word
-	ror eax, 16				; shift state to the right by two bytes
+	ror eax, 16				; shift column to the right by two bytes
 	dec rcx
 	jnz	SubBytesLoop
 	
 	; RCon
 	xor ebx, ebx
 	mov bl, al				; move first byte of word into bl
-	lea rsi, [rcon]			; get address of the sbox array
-	xor al, [ rsi + r8 ]	; substitute first byte of word
+	lea rsi, [rcon]			; get address of the rcon array
+	xor al, [ rsi + r8 ]	; xor first byte of word with rcon (round constant)
 	inc r8					; increment Rcon iteration
 
 	mov rcx, 4				; Initialize ColumnsXor counter
