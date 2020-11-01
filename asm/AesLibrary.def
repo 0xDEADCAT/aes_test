@@ -2,3 +2,4 @@ LIBRARY "asm"
 EXPORTS
 
 asmEncrypt
+asmKeyExpansion

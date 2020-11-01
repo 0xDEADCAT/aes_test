@@ -167,6 +167,11 @@ db 3bH, 38H, 3dH, 3eH, 37H, 34H, 31H, 32H, 23H, 20H, 25H, 26H, 2fH, 2cH, 29H, 2a
 db 0bH, 08H, 0dH, 0eH, 07H, 04H, 01H, 02H, 13H, 10H, 15H, 16H, 1fH, 1cH, 19H, 1aH
 ;-------------------------------------------
 
+;-------------------------------------------
+; Round constant
+rcon db 8dH, 01H, 02H, 04H, 08H, 10H, 20H, 40H, 80H, 1bH, 36H, 6cH, 0d8H, 0abH, 4dH, 9aH
+;-------------------------------------------
+
 .code
 asmEncrypt proc
 	movdqu	xmm0, [rcx]		; Move state to xmm0
@@ -203,4 +208,66 @@ LoopHead:
 
 	ret
 asmEncrypt endp
+
+asmKeyExpansion proc
+	movdqu xmm0, [rcx]		; Move original key to xmm0
+	movdqu [rdx], xmm0		; Copy original key to beginning of expandedKeys array
+	add rdx, 16				; Move to next key in expandedKeys
+	
+	push rbx
+	push rcx
+	mov rcx, 10				; Initialize KeyExpLoop counter for number of generated round keys
+	mov r8, 1				; rcon Iteration
+	
+KeyExpLoop:
+	pextrd eax, xmm0, 3		; Extract last column from previous key
+	ror eax, 8				; RotWord
+
+	push rcx				; Preserve KeyExpLoop counter
+	mov rcx, 2				; Initialize SubBytesLoop counter
+SubBytesLoop:
+	xor ebx, ebx
+	mov bl, al				; move first byte of word into bl
+	lea rsi, [sbox]			; get address of the sbox array
+	mov al, [ rsi + rbx ]	; substitute first byte of word
+	xor ebx, ebx
+	mov bl, ah				; move second byte of word into bl
+	mov ah, [ rsi + rbx ]	; substitute second byte of word
+	ror eax, 16				; shift state to the right by two bytes
+	dec rcx
+	jnz	SubBytesLoop
+	
+	; RCon
+	xor ebx, ebx
+	mov bl, al				; move first byte of word into bl
+	lea rsi, [rcon]			; get address of the sbox array
+	xor al, [ rsi + r8 ]	; substitute first byte of word
+	inc r8					; increment Rcon iteration
+
+	mov rcx, 4				; Initialize ColumnsXor counter
+	pxor xmm1, xmm1			; Clear xmm1 register
+
+ColumnsXor:
+	pextrd ebx, xmm0, 0		; Extract first column from previous key
+	xor eax, ebx			; Perform xor operation between columns from current and previous key
+	pinsrd xmm1, eax, 0		; Insert newly generated column into xmm1
+	pshufd xmm0, xmm0, 57	; Shift previous key columns right
+	pshufd xmm1, xmm1, 57	; Shift current key columns right
+	dec rcx
+	jnz ColumnsXor
+
+	pop rcx					; Retrieve KeyExpLoop counter from stack
+
+	movdqu xmm0, xmm1		; Copy newly generated key into previous key register
+	movdqu [rdx], xmm0		; Move newly generated key to expandedKeys array
+	add rdx, 16				; Move to next key address in expandedKeys array
+
+	dec rcx
+	jnz KeyExpLoop
+
+	pop rcx					; Retrieve original array address from the stack
+	pop rbx
+
+	ret
+asmKeyExpansion endp
 end
