@@ -28,7 +28,7 @@ MixColumns macro reg
 	LOCAL MixColumnsLoop
 	push rcx				; Push address of the state array on the stack
 
-	mov rcx, 4
+	mov rcx, 4				; Initialize loop counter for MixColumnsLoop
 
 MixColumnsLoop:
 	; Extract column from state
@@ -37,58 +37,70 @@ MixColumnsLoop:
 	pextrb r10, reg, 2
 	pextrb r11, reg, 3
 
+	; Begin first byte calculation
+
 	lea r13, [gf2]			; Get address of Galois Field multiplication by 2 lookup table
 	mov r12b, [r13 + r8]	; Move first byte multiplied by 2 in GF into r12b
 
 	lea r13, [gf3]			; Get address of Galois Field multiplication by 3 lookup table
 	xor r12b, [r13 + r9]	; XOR second byte multiplied by 3 in GF with r12b
 
-	xor r12b, r10b			; XOR Third byte of column with intermediate result in r12b
-	xor r12b, r11b			; XOR Fourth byte of column with intermediate result in r12b
-	psrldq reg, 1
-	pinsrb reg, r12d, 15
+	xor r12b, r10b			; XOR third byte of column with intermediate result in r12b
+
+	xor r12b, r11b			; XOR fourth byte of column with intermediate result in r12b
+
+	psrldq reg, 1			; Shift state register one byte to the right
+	pinsrb reg, r12d, 15	; Insert calculated byte at most significant byte
 
 	; First byte done
 
-	mov r12b, r8b			; First byte
+	; Begin second byte calculation
 
-	lea r13, [gf2]
-	xor r12b, [r13 + r9]	; xor with gf2 second byte
+	mov r12b, r8b			; Move first byte into r12b
 
-	lea r13, [gf3]
-	xor r12b, [r13 + r10]	; xor with gf3 third byte
+	lea r13, [gf2]			; Get address of Galois Field multiplication by 2 lookup table
+	xor r12b, [r13 + r9]	; XOR second byte multiplied by 2 in GF with r12b
 
-	xor r12b, r11b			; xor with fourth byte
-	psrldq reg, 1
-	pinsrb reg, r12d, 15
+	lea r13, [gf3]			; Get address of Galois Field multiplication by 3 lookup table
+	xor r12b, [r13 + r10]	; XOR third byte multiplied by 3 in GF with r12b
+
+	xor r12b, r11b			; XOR fourth byte of column with intermediate result in r12b
+
+	psrldq reg, 1			; Shift state register one byte to the right
+	pinsrb reg, r12d, 15	; Insert calculated byte at most significant byte
 
 	; Second byte done
 
-	mov r12b, r8b			; First byte
+	; Begin third byte calculation
 
-	xor r12b, r9b			; xor with second byte
+	mov r12b, r8b			; Move first byte into r12b
 
-	lea r13, [gf2]
-	xor r12b, [r13 + r10]	; xor with gf2 third byte
+	xor r12b, r9b			; XOR second byte of column with intermediate result in r12b
 
-	lea r13, [gf3]
-	xor r12b, [r13 + r11]	; xor with gf3 fourth byte
-	psrldq reg, 1
-	pinsrb reg, r12d, 15
+	lea r13, [gf2]			; Get address of Galois Field multiplication by 2 lookup table
+	xor r12b, [r13 + r10]	; XOR third byte multiplied by 2 in GF with r12b
+
+	lea r13, [gf3]			; Get address of Galois Field multiplication by 3 lookup table
+	xor r12b, [r13 + r11]	; XOR fourth byte multiplied by 3 in GF with r12b
+
+	psrldq reg, 1			; Shift state register one byte to the right
+	pinsrb reg, r12d, 15	; Insert calculated byte at most significant byte
 
 	; Third byte done
 
-	lea r13, [gf3]
-	mov r12b, [r13 + r8]	; First byte gf3 
+	; Begin fourth byte calculation
 
-	xor r12b, r9b			; xor with second byte
+	mov r12b, [r13 + r8]	; Move first byte multiplied by 3 in GF into r12b (r13 already contains gf3 address)
 
-	xor r12b, r10b			; xor with  third byte
+	xor r12b, r9b			; XOR second byte of column with intermediate result in r12b
 
-	lea r13, [gf2]
-	xor r12b, [r13 + r11]	; xor with gf3 fourth byte
-	psrldq reg, 1
-	pinsrb reg, r12d, 15
+	xor r12b, r10b			; XOR third byte of column with intermediate result in r12b
+
+	lea r13, [gf2]			; Get address of Galois Field multiplication by 2 lookup table
+	xor r12b, [r13 + r11]	; XOR fourth byte multiplied by 2 in GF with r12b
+
+	psrldq reg, 1			; Shift state register one byte to the right
+	pinsrb reg, r12d, 15	; Insert calculated byte at most significant byte
 
 	; Fourth byte done
 
@@ -124,10 +136,11 @@ InvMixColumnsLoop:
 	xor r12b, [r13 + r9]	; XOR second byte multiplied by 11 in GF with r12b
 
 	lea r13, [gf13]			; Get address of Galois Field multiplication by 13 lookup table
-	xor r12b, [r13 + r10]	; XOR Third byte multiplied by 13 in GF with r12b
+	xor r12b, [r13 + r10]	; XOR third byte multiplied by 13 in GF with r12b
 
 	lea r13, [gf9]			; Get address of Galois Field multiplication by 9 lookup table
-	xor r12b, [r13 + r11]	; XOR Fourth byte multiplied by 9 in GF with r12b
+	xor r12b, [r13 + r11]	; XOR fourth byte multiplied by 9 in GF with r12b
+
 	psrldq reg, 1			; Shift state register one byte to the right
 	pinsrb reg, r12d, 15	; Insert calculated byte at most significant byte
 
@@ -141,10 +154,11 @@ InvMixColumnsLoop:
 	xor r12b, [r13 + r9]	; XOR second byte multiplied by 14 in GF with r12b
 
 	lea r13, [gf11]			; Get address of Galois Field multiplication by 11 lookup table
-	xor r12b, [r13 + r10]	; XOR Third byte multiplied by 11 in GF with r12b
+	xor r12b, [r13 + r10]	; XOR third byte multiplied by 11 in GF with r12b
 
 	lea r13, [gf13]			; Get address of Galois Field multiplication by 13 lookup table
-	xor r12b, [r13 + r11]	; XOR Fourth byte multiplied by 13 in GF with r12b
+	xor r12b, [r13 + r11]	; XOR fourth byte multiplied by 13 in GF with r12b
+
 	psrldq reg, 1			; Shift state register one byte to the right
 	pinsrb reg, r12d, 15	; Insert calculated byte at most significant byte
 
@@ -158,10 +172,11 @@ InvMixColumnsLoop:
 	xor r12b, [r13 + r9]	; XOR second byte multiplied by 9 in GF with r12b
 
 	lea r13, [gf14]			; Get address of Galois Field multiplication by 14 lookup table
-	xor r12b, [r13 + r10]	; XOR Third byte multiplied by 14 in GF with r12b
+	xor r12b, [r13 + r10]	; XOR third byte multiplied by 14 in GF with r12b
 
 	lea r13, [gf11]			; Get address of Galois Field multiplication by 11 lookup table
-	xor r12b, [r13 + r11]	; XOR Fourth byte multiplied by 11 in GF with r12b
+	xor r12b, [r13 + r11]	; XOR fourth byte multiplied by 11 in GF with r12b
+
 	psrldq reg, 1			; Shift state register one byte to the right
 	pinsrb reg, r12d, 15	; Insert calculated byte at most significant byte
 
@@ -175,10 +190,11 @@ InvMixColumnsLoop:
 	xor r12b, [r13 + r9]	; XOR second byte multiplied by 13 in GF with r12b
 
 	lea r13, [gf9]			; Get address of Galois Field multiplication by 9 lookup table
-	xor r12b, [r13 + r10]	; XOR Third byte multiplied by 9 in GF with r12b
+	xor r12b, [r13 + r10]	; XOR third byte multiplied by 9 in GF with r12b
 
 	lea r13, [gf14]			; Get address of Galois Field multiplication by 14 lookup table
-	xor r12b, [r13 + r11]	; XOR Fourth byte multiplied by 14 in GF with r12b
+	xor r12b, [r13 + r11]	; XOR fourth byte multiplied by 14 in GF with r12b
+
 	psrldq reg, 1			; Shift state register one byte to the right
 	pinsrb reg, r12d, 15	; Insert calculated byte at most significant byte
 
