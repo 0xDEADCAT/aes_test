@@ -58,6 +58,9 @@ namespace openaes
                 return;
             }
 
+            string operation = decrypt ? "decryption" : "encryption";
+            Console.WriteLine($"Performing {operation} using the {use} implementation.");
+
             AesFactory aesFactory = new AesFactory();
             IAes aes = aesFactory.GetAes(use);
 
