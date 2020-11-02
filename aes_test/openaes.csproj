@@ -28,7 +28,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\cs_implementation\cs_implementation.csproj" />
+    <Reference Include="cs_implementation">
+      <HintPath>..\cs_implementation\bin\Release\netcoreapp3.1\cs_implementation.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
   </ItemGroup>
 
 </Project>
