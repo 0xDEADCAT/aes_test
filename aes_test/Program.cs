@@ -160,7 +160,7 @@ namespace openaes
                             if(n == 0 || n > 16)
                             {
                                 Console.ForegroundColor = ConsoleColor.Red;
-                                Console.Error.WriteLine("Bad decrypt");
+                                Console.Error.WriteLine("Bad decrypt (is the supplied passphrase correct?)");
                                 Console.ResetColor();
                                 return;
                             }
@@ -169,7 +169,7 @@ namespace openaes
                                 if(final[--b] != n)
                                 {
                                     Console.ForegroundColor = ConsoleColor.Red;
-                                    Console.Error.WriteLine("Bad decrypt");
+                                    Console.Error.WriteLine("Bad decrypt (is the supplied passphrase correct?)");
                                     Console.ResetColor();
                                     return;
                                 }
