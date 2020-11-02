@@ -55,6 +55,8 @@ namespace openaes
 
             AesAsm aes = new AesAsm();
 
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+
             if (!decrypt)
             {
                 // Create key using PBKDF2
@@ -181,6 +183,11 @@ namespace openaes
                     }
                 } 
             }
+
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+            Console.WriteLine($"The selected operation was performed in {elapsedMs} ms.");
+
         }
     }
 }
