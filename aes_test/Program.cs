@@ -38,12 +38,17 @@ namespace openaes
                 description: "Decrypt the input data.");
             decryptOption.Argument = new Argument<bool>();
             rootCommand.AddOption(decryptOption);
+            Option implementationOption = new Option(
+                aliases: new string[] { "--use", "-u" },
+                description: "Choose which implementation to use (Asm by default)");
+            implementationOption.Argument = new Argument<AesImplementation>();
+            rootCommand.AddOption(implementationOption);
             rootCommand.Handler =
-              CommandHandler.Create<FileInfo, FileInfo, String, bool>(RunAES);
+              CommandHandler.Create<FileInfo, FileInfo, String, bool, AesImplementation>(RunAES);
             return await rootCommand.InvokeAsync(args);
         }
 
-        public static void RunAES(FileInfo input, FileInfo output, String passphrase, bool decrypt)
+        public static void RunAES(FileInfo input, FileInfo output, String passphrase, bool decrypt, AesImplementation use)
         {
             if(!input.Exists)
             {
@@ -53,7 +58,8 @@ namespace openaes
                 return;
             }
 
-            AesAsm aes = new AesAsm();
+            AesFactory aesFactory = new AesFactory();
+            IAes aes = aesFactory.GetAes(use);
 
             var watch = System.Diagnostics.Stopwatch.StartNew();
 
