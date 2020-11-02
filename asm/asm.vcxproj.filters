@@ -15,11 +15,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="AesLibrary.asm">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="AesLibrary.def">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="..\..\..\..\Downloads\bin2o_04\sbox.bin">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="AesLibrary.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
   </ItemGroup>
 </Project>

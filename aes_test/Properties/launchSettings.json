@@ -2,7 +2,7 @@
   "profiles": {
     "aes_test": {
       "commandName": "Project",
-      "commandLineArgs": "-i xd.txt -o xd2.txt -p xd -d",
+      "commandLineArgs": "-i enc.txt -o dec.txt -p hunter2 -d",
       "nativeDebugging": true
     }
   }

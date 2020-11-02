@@ -1,4 +1,6 @@
 LIBRARY "asm"
 EXPORTS
 
-asmAddTwoInts
+asmEncrypt
+asmDecrypt
+asmKeyExpansion
