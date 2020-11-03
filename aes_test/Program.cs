@@ -14,7 +14,7 @@ namespace openaes
         public static async Task<int> Main(params string[] args)
         {
             RootCommand rootCommand = new RootCommand(
-                description: "Encrypts (default) or decrypts a file using Advanced Encryption Standard (AES).");
+                description: "Encrypts (default) or decrypts a file using Advanced Encryption Standard (AES-128-ECB).");
             Option inputOption = new Option(
                 aliases: new string[] { "--input", "-i" },
                 description: "The path to the file that is to be encrypted/decrypted.");
@@ -59,7 +59,7 @@ namespace openaes
             }
 
             string operation = decrypt ? "decryption" : "encryption";
-            Console.WriteLine($"Performing {operation} using the {use} implementation.");
+            Console.WriteLine($"Performing {operation} using the {use} implementation of the AES-128-ECB algorithm.");
 
             AesFactory aesFactory = new AesFactory();
             IAes aes = aesFactory.GetAes(use);
